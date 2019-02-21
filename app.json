@@ -20,11 +20,12 @@
     "ios": {
       "supportsTablet": true
     },
+    "githubUrl": "https://github.com/ishanjoshi02/FooBarDataCollector.git",
     "android": {
       "package": "com.ishanjoshi.datacollector"
     },
     "androidStatusBar": {
-      "barStyle": "dark-content"
+      "barStyle": "light-content"
     }
   }
 }

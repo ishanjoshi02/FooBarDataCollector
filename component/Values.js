@@ -9,8 +9,8 @@ function round(n) {
 }
 const Values = ({ x, y, z, sensorName }) => {
   return (
-    <View>
-      <Text>{sensorName}</Text>
+    <View style={{ marginTop: "2%" }}>
+      <Text style={{ fontSize: 20 }}>{sensorName}</Text>
       <Text>{round(x)}</Text>
       <Text>{round(y)}</Text>
       <Text>{round(z)}</Text>
