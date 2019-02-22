@@ -47,7 +47,8 @@ export default class App extends React.Component {
       events: ["Pothole", "Normal Road", "SpeedBreaker"],
       selectedEvent: "Pothole",
       recording: false,
-      location: null
+      location: null,
+      uploadState: 0
     };
   }
   componentWillMount() {
@@ -73,9 +74,18 @@ export default class App extends React.Component {
         25,
         50
       );
+    } else if (!Location.hasServicesEnabledAsync()) {
+      ToastAndroid.showWithGravity(
+        "GPS is off. Turn it on",
+        ToastAndroid.LONG,
+        ToastAndroid.BOTTOM,
+        25,
+        50
+      );
+    } else {
+      let location = await Location.getCurrentPositionAsync({ accuracy: 6 });
+      this.setState({ location });
     }
-    let location = await Location.getCurrentPositionAsync({});
-    this.setState({ location });
   };
   handleGyroscopeData = data => {
     const { x, y, z } = data;
@@ -122,7 +132,7 @@ export default class App extends React.Component {
     Magnetometer.removeAllListeners();
   }
   startRecording = () => {
-    this.setState({ recording: true });
+    this.setState({ recording: true, uploadState: 1 });
     this.setLocation();
   };
   stopRecording = () => {
@@ -131,22 +141,38 @@ export default class App extends React.Component {
       .database()
       .ref(this.state.selectedEvent)
       .push();
-    const { gyroArray, accArray, magnetoArray } = this.state;
-    dbRef.set({
-      gyroArray,
-      accArray,
-      magnetoArray
-    });
+    const { gyroArray, accArray, magnetoArray, location } = this.state;
+    dbRef
+      .set({
+        gyroArray,
+        accArray,
+        magnetoArray,
+        location
+      })
+      .then(() => {
+        this.setState({ uploadState: 2 });
+      });
   };
   render() {
     return (
       <View style={styles.container}>
         <ScrollView style={{ marginTop: `7.5%`, marginLeft: `5%` }}>
-          {this.state.recording ? (
-            <Text style={{ fontSize: 23 }}>Recording...</Text>
-          ) : (
-            <Text style={{ fontSize: 23, color: "red" }}>Not Recording</Text>
-          )}
+          <View style={{ marginTop: "5%" }}>
+            {this.state.recording ? (
+              <Text style={{ fontSize: 23, color: "green" }}>Recording...</Text>
+            ) : (
+              <Text style={{ fontSize: 23, color: "red" }}>Not Recording</Text>
+            )}
+            {this.state.uploadState === 1 ? (
+              <Text style={{ fontSize: 19, color: "blue" }}>
+                Uploading data to Firebase.
+              </Text>
+            ) : this.state.uploadState === 2 ? (
+              <Text style={{ fontSize: 23, color: "green" }}>
+                Uploaded Data to Firebase
+              </Text>
+            ) : null}
+          </View>
           <Picker
             selectedValue={this.state.selectedEvent}
             onValueChange={(itemValue, itemIndex) =>
