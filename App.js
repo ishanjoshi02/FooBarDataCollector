@@ -1,9 +1,26 @@
-import React, { Component } from "react";
-import { StyleSheet, Text, View, ScrollView, Picker } from "react-native";
-import { Gyroscope, Accelerometer, Magnetometer } from "expo";
+import React from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Picker,
+  Platform,
+  ToastAndroid
+} from "react-native";
+import {
+  Gyroscope,
+  Accelerometer,
+  Magnetometer,
+  Constants,
+  Location,
+  Permissions
+} from "expo";
 import { TouchableOpacity } from "react-native";
 import Values from "./component/Values";
 import firebaseApp from "./secrets/firebase";
+
+const UPDATE_TIME = 100;
 
 export default class App extends React.Component {
   constructor(props) {
@@ -29,9 +46,37 @@ export default class App extends React.Component {
       magnetoArray: [],
       events: ["Pothole", "Normal Road", "SpeedBreaker"],
       selectedEvent: "Pothole",
-      recording: false
+      recording: false,
+      location: null
     };
   }
+  componentWillMount() {
+    if (Platform.OS === "android" && !Constants.isDevice) {
+      ToastAndroid.showWithGravity(
+        "Cannot access location.\n Please ensure you have the correct device",
+        ToastAndroid.LONG,
+        ToastAndroid.BOTTOM,
+        25,
+        50
+      );
+    } else {
+      this.setLocation();
+    }
+  }
+  setLocation = async () => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== "granted") {
+      ToastAndroid.showWithGravity(
+        "Location access not grant.\n This app needs location permissions to work",
+        ToastAndroid.LONG,
+        ToastAndroid.BOTTOM,
+        25,
+        50
+      );
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    this.setState({ location });
+  };
   handleGyroscopeData = data => {
     const { x, y, z } = data;
     this.setState({ gyro: { x, y, z } });
@@ -64,11 +109,11 @@ export default class App extends React.Component {
     }
   };
   componentDidMount = () => {
-    Gyroscope.setUpdateInterval(100);
+    Gyroscope.setUpdateInterval(UPDATE_TIME);
     Gyroscope.addListener(this.handleGyroscopeData);
-    Accelerometer.setUpdateInterval(100);
+    Accelerometer.setUpdateInterval(UPDATE_TIME);
     Accelerometer.addListener(this.handleAccelerometerData);
-    Magnetometer.setUpdateInterval(100);
+    Magnetometer.setUpdateInterval(UPDATE_TIME);
     Magnetometer.addListener(this.handleMagnetometerData);
   };
   componentWillUnmount() {
@@ -78,6 +123,7 @@ export default class App extends React.Component {
   }
   startRecording = () => {
     this.setState({ recording: true });
+    this.setLocation();
   };
   stopRecording = () => {
     this.setState({ recording: false });
