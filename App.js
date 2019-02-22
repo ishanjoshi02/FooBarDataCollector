@@ -48,6 +48,7 @@ export default class App extends React.Component {
       selectedEvent: "Pothole",
       recording: false,
       location: null,
+      locationState: false,
       uploadState: 0
     };
   }
@@ -83,8 +84,9 @@ export default class App extends React.Component {
         50
       );
     } else {
-      let location = await Location.getCurrentPositionAsync({ accuracy: 6 });
+      let location = await Location.getCurrentPositionAsync({});
       this.setState({ location });
+      this.setState({ locationState: true });
     }
   };
   handleGyroscopeData = data => {
@@ -201,6 +203,11 @@ export default class App extends React.Component {
             z={this.state.magneto.z}
             sensorName="Magnetometer"
           />
+          {this.state.locationState ? (
+            <Text>GPS Found</Text>
+          ) : (
+            <Text>GPS not found. Please wait a while.</Text>
+          )}
           <TouchableOpacity
             onPress={this.startRecording}
             style={{

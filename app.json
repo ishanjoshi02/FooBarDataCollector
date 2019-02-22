@@ -32,6 +32,6 @@
     "androidStatusBar": {
       "barStyle": "light-content"
     },
-    "description": ""
+    "description": "A data collection app that is able to record data from sensors - Accelerometer, Gyroscope and Magnetometer.\nData will be used to train a pothole classifier.\n"
   }
 }
