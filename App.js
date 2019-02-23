@@ -54,7 +54,7 @@ export default class App extends React.Component {
   }
   componentWillMount() {
     if (Platform.OS === "android" && !Constants.isDevice) {
-      ToastAndroid.showWithGravity(
+      ToastAndroid.show(
         "Cannot access location.\n Please ensure you have the correct device",
         ToastAndroid.LONG,
         ToastAndroid.BOTTOM,
@@ -68,26 +68,17 @@ export default class App extends React.Component {
   setLocation = async () => {
     let { status } = await Permissions.askAsync(Permissions.LOCATION);
     if (status !== "granted") {
-      ToastAndroid.showWithGravity(
+      ToastAndroid.show(
         "Location access not grant.\n This app needs location permissions to work",
         ToastAndroid.LONG,
         ToastAndroid.BOTTOM,
         25,
         50
       );
-    } else if (!Location.hasServicesEnabledAsync()) {
-      ToastAndroid.showWithGravity(
-        "GPS is off. Turn it on",
-        ToastAndroid.LONG,
-        ToastAndroid.BOTTOM,
-        25,
-        50
-      );
-    } else {
-      let location = await Location.getCurrentPositionAsync({});
-      this.setState({ location });
-      this.setState({ locationState: true });
     }
+    let location = await Location.getCurrentPositionAsync();
+    this.setState({ location });
+    this.setState({ locationState: true });
   };
   handleGyroscopeData = data => {
     const { x, y, z } = data;
